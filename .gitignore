@@ -1,0 +1,18 @@
+# Ignore all logfiles and tempfiles.
+/log
+/tmp
+*.log
+
+# Ignore other unneeded files.
+doc/
+*.swp
+*~
+.project
+.DS_Store
+.idea
+.byebug_history
+coverage
+README_configs.txt
+
+## Ignore ruby version pins
+.ruby-*
