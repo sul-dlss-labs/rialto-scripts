@@ -8,17 +8,11 @@
 # gem install 'faraday'
 # gem install 'nokogiri'
 
+# requires ruby 2.3 or better
+
 # Set parameters below in the code, get the WOS_AUTH_CODE and pass in as an env variable,
 #  create input CSV file and then run with
 # WOS_AUTH_CODE=XXXX ruby totals_wos_search.rb
-
-# input file is CSV format with name in first column in "Last, First Middle" format all in a single column (all values surrouned by quotes).
-#  the CSV file should include a header row as well, though the header names don't matter
-#  extra columns are fine
-# e.g.
-# Names
-# "Donald, Duck"
-# "Dude, Somename L"
 
 $stdout.sync = true # flush output immediately
 require 'csv'

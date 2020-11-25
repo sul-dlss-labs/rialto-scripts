@@ -59,13 +59,13 @@ class WosClient
 
   def name_query(name)
     split_name=name.split(',')
-    last_name = split_name[0]
-    first_middle_name = split_name[1]
+    last_name = split_name[0]&.strip
+    first_middle_name = split_name[1]&.strip
     if first_middle_name.size == 1
       name_query = "#{last_name} #{first_middle_name[0]} OR #{last_name} #{first_middle_name[0]}"
     else
-      first_name = first_middle_name.split(' ')[0]
-      middle_name = first_middle_name.split(' ')[1]
+      first_name = first_middle_name.split(' ')[0]&.strip
+      middle_name = first_middle_name.split(' ')[1]&.strip
       name_query = "#{last_name} #{first_name} OR #{last_name} #{first_name[0]}"
       name_query += " OR #{last_name} #{first_name[0]}#{middle_name[0]} OR #{last_name} #{first_name} #{middle_name[0]}" unless middle_name.blank?
     end
