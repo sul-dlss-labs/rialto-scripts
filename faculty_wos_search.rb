@@ -104,8 +104,8 @@ names.each_with_index do |name,index|
     end
   end
 
-  puts author_countries_count[name] if search_countries
-  puts author_organizations_count[name] if search_orgs
+  # puts author_countries_count[name] if search_countries
+  # puts author_organizations_count[name] if search_orgs
 
   puts
   total_pubs += num_records
@@ -133,8 +133,8 @@ puts
 sorted_countries_count = countries_count.sort_by{ |k, v| v }.reverse.to_h if search_countries
 sorted_organizations_count = organizations_count.sort_by{ |k, v| v }.reverse.to_h if search_orgs
 
-puts sorted_countries_count if search_countries
-puts sorted_organizations_count if search_orgs
+# puts sorted_countries_count if search_countries
+# puts sorted_organizations_count if search_orgs
 
 csv_output = CSV.open(output_file, "ab")
 csv_output << []
