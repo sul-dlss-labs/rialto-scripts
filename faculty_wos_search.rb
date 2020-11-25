@@ -9,6 +9,7 @@
 # gem install 'faraday'
 # gem install 'nokogiri'
 # gem install 'activesupport'
+
 # requires ruby 2.3 or better
 
 # Set parameters below in the code, get the WOS_AUTH_CODE and pass in as an env variable,
@@ -44,8 +45,6 @@ search_countries = true # set to false to skip country enumeration for faster re
 institutions = ["Stanford University"] # restrict the publication search (searched by name) to just authors from these institutions -- could be an array of institutions
 #### END PARAMETERS TO SET ####
 
-client = WosClient.new(ENV['WOS_AUTH_CODE']) # find the WOS authorization key in shared_configs for sul_pub
-
 puts "Reading #{input_file}"
 names = []
 CSV.foreach(input_file,:headers=>true) do |row|
@@ -62,6 +61,7 @@ unless limit.blank?
 end
 total_names = names.size
 puts "#{total_names} total names will be operated on"
+puts
 
 countries_count = Hash.new(0)
 author_countries_count = Hash.new
@@ -69,8 +69,11 @@ organizations_count = Hash.new(0)
 author_organizations_count = Hash.new
 
 total_pubs = 0
-# set some maximum number of runs we will attempt to fetch records for any given person (thereby limiting the max number of pubs to max_records, defaults to 100, * max_runs_per_person)
-max_runs_per_person = 30
+# set some maximum number of runs we will attempt to fetch records for any given person (thereby limiting the max number of pubs to max_records * max_runs_per_person)
+max_records = 100 # this is the maximum number that can be returned in single query by WoS
+max_runs_per_person = 30 # maximum number of pages of max_records per person
+
+client = WosClient.new(wos_auth_code: ENV['WOS_AUTH_CODE'], max_records: max_records) # find the WOS authorization key in shared_configs for sul_pub
 
 names.each_with_index do |name,index|
   next if name.blank?
@@ -83,10 +86,9 @@ names.each_with_index do |name,index|
   num_retrieved = 0
   num_runs = 0
   result_xml_doc = client.name_search(name, institutions, start_date, end_date)
-  query_id_node = result_xml_doc.at_xpath('//queryId')
-  query_id = query_id_node.nil? ? "" : query_id_node.content
-  num_records_node = result_xml_doc.at_xpath('//recordsFound')
-  num_records = num_records_node.nil? ? 0 : num_records_node.content.to_i
+  num_records = client.num_records(result_xml_doc)
+  query_id = client.query_id(result_xml_doc)
+
   puts "...found #{num_records} pubs"
 
   if num_records > 0
@@ -95,8 +97,7 @@ names.each_with_index do |name,index|
     while (num_retrieved < num_records && num_pubs != 0 && num_runs < max_runs_per_person) do # we have more to go
       next_record = num_retrieved + 1
       puts "..... fetching next batch starting at #{next_record}"
-      body = "<soap:Envelope xmlns:soap=\"http://schemas.xmlsoap.org/soap/envelope/\"><soap:Body><ns2:retrieve xmlns:ns2=\"http://woksearch.v3.wokmws.thomsonreuters.com\"><queryId>#{query_id}</queryId><retrieveParameters><firstRecord>#{next_record}</firstRecord><count>100</count></retrieveParameters></ns2:retrieve></soap:Body></soap:Envelope>"
-      result_xml_doc = client.run_search(body)
+      result_xml_doc = client.continue_search(query_id, next_record)
       num_pubs = enumerate_results(result_xml_doc,countries_count,author_countries_count[name],organizations_count,author_organizations_count[name],search_countries,search_orgs,restrict_to_organizations)
       num_retrieved += num_pubs
       num_runs+=1
