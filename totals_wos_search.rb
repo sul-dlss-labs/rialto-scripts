@@ -1,7 +1,6 @@
 # Total Publication Count By Year Report
 
 # Count the total number of publications from Stanford by year
-# Input is a list of faculty names in a csv file
 # Output is list of publications by year, from the specified start year until the current year
 
 # required gems:
