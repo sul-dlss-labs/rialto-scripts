@@ -12,7 +12,7 @@
 
 # Set parameters below in the code, get the WOS_AUTH_CODE and pass in as an env variable,
 #  create input CSV file and then run with
-# WOS_AUTH_CODE=XXXX ruby totals_wos_search.rb
+# WOS_AUTH_CODE=XXXX ruby totals_per_year_wos_search.rb
 
 $stdout.sync = true # flush output immediately
 require 'csv'
@@ -25,7 +25,7 @@ end_year = Time.now.year # default to current year
 institutions = ["Stanford University"] # restrict the publication search (searched by name) to just authors from these institutions -- could be an array of institutions
 #### END PARAMETERS TO SET ####
 
-client = WosClient.new(ENV['WOS_AUTH_CODE']) # find the WOS authorization key in shared_configs for sul_pub
+client = WosClient.new(wos_auth_code: ENV['WOS_AUTH_CODE']) # find the WOS authorization key in shared_configs for sul_pub
 
 years_count = Hash.new(0)
 total_pubs = 0
@@ -39,10 +39,8 @@ for year in start_year..end_year do
   csv_output = CSV.open(output_file, "ab")
 
   result_xml_doc = client.year_search(year, institutions)
-  query_id_node = result_xml_doc.at_xpath('//queryId')
-  query_id = query_id_node.nil? ? "" : query_id_node.content
-  num_records_node = result_xml_doc.at_xpath('//recordsFound')
-  num_records = num_records_node.nil? ? 0 : num_records_node.content.to_i
+  num_records = client.num_records(result_xml_doc)
+
   puts "searching for #{year}...found #{num_records} pubs"
   years_count[year] = num_records
   total_pubs += num_records
