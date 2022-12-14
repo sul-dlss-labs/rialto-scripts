@@ -1,0 +1,1 @@
+In order to run any of the scripts you will need to first get the data from Google Drive. Each facility has its own 'data' folder that will need to be added. e.g. 'czo/data'. https://drive.google.com/drive/folders/1Jhnz-pKhqRpWM-NIUQYqIpV94goVa7Wx
