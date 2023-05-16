@@ -2,14 +2,14 @@
 # $ conda create --name <env> --file <this file>
 # platform: osx-64
 dependencies:
-  - matplotlib-base=3.5.3=py310hfb0c5b7_0
-  - matplotlib-inline=0.1.6=py310hecd8cb5_0
-  - matplotlib-venn=0.11.9=pypi_0
-  - numpy=1.23.3=py310hc1140d4_1
-  - pandas=1.5.0=pypi_0
-  - pickleshare=0.7.5=pyhd3eb1b0_1003
-  - plotly=5.9.0=py310hecd8cb5_0
-  - seaborn=0.12.0=py310hecd8cb5_0
-  - streamlit=1.11.0=py310hecd8cb5_0
+  - matplotlib-base=3.5.3
+  - matplotlib-inline=0.1.6
+  - matplotlib-venn=0.11.9
+  - numpy=1.23.3
+  - pandas=1.5.0
+  - pickleshare=0.7.5
+  - plotly=5.9.0
+  - seaborn=0.12.0
+  - streamlit=1.11.0
 
 
