@@ -30,6 +30,10 @@ orcid_dimensions_publications = orcid_dimensions_contributions.drop_duplicates(s
 sul_pub_dimensions_contributions = pd.read_csv('input/dimensions/final/sul_pub_pubs_from_dois_final.csv')
 sul_pub_dimensions_publications = sul_pub_dimensions_contributions.drop_duplicates(subset='doi')
 
+openalex_dimensions_publications_dois = openalex_dimensions_publications.doi
+orcid_dimensions_publications_dois = orcid_dimensions_publications.doi
+sul_pub_dimensions_publications_dois = sul_pub_dimensions_publications.doi
+
 combined_publications = sul_pub_dimensions_contributions.drop_duplicates(subset='doi')
 sul_pub_raw_publications = pd.read_csv('input/sul_pub/pubs_all_authors_03212023.csv').drop_duplicates(subset='doi')
 
@@ -41,6 +45,7 @@ combined_contributions['federally_funded'] = combined_contributions.apply(lambda
 combined_contributions['open_access_cleaned'] = combined_contributions['open_access'].str.replace("'oa_all', ", '').str.replace("[", "").str.replace("]", "").str.replace("'", "")
 
 combined_publications = combined_contributions.drop_duplicates(subset='doi')
+combined_publications_count = combined_publications.shape[0]
 
 sul_pub_raw_publications_count = sul_pub_raw_publications.shape[0]
 
@@ -97,20 +102,24 @@ publications_grant_and_federally_funded_2019 = combined_publications[combined_pu
 combined_publications.to_csv('input/dimensions/final/combined_publications.csv')
 
 # Saving the objects:
-with open('input/objs.pkl', 'wb') as f:  # Python 3: open(..., 'wb')
+with open('input/objs_one.pkl', 'wb') as f:  # Python 3: open(..., 'wb')
     pickle.dump([sul_pub_raw_publications_count,
                  sul_pub_raw_publications_doi_count,
-                 openalex_dimensions_publications,
-                 orcid_dimensions_publications,
-                 sul_pub_dimensions_publications,
-                 combined_publications,
-                 publications_type,
+                 openalex_dimensions_publications_dois,
+                 orcid_dimensions_publications_dois,
+                 sul_pub_dimensions_publications_dois,
+                 combined_publications_count], f)
+
+with open('input/objs_two.pkl', 'wb') as f:
+    pickle.dump([publications_type,
                  publications_pmcid_count,
                  publications_arxiv_id_count,
                  plot_two_data,
                  plot_two_labels,
-                 publications_oa_pre_print_count,
-                 plot_three_data,
+                 publications_oa_pre_print_count], f)
+
+with open('input/objs_three.pkl', 'wb') as f:
+    pickle.dump([plot_three_data,
                  oa_cost,
                  stanford_cost_gold,
                  stanford_cost_hybrid,
