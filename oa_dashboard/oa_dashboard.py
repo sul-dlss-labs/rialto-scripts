@@ -112,7 +112,7 @@ def plot_one():
     st.write(f"There were {publication_count_sul_pub} publications exported from SUL-Pub. {publications_with_doi_count} of them had a doi. We were able to find {sul_pub_dimensions_publications_dois.shape[0]} of them in Dimensions ({round(100*(sul_pub_dimensions_publications_dois.shape[0]/publications_with_doi_count))}%) by queying their doi. An additional {openalex_dimensions_publications_dois.shape[0]} publications were harvested from Openalex and {orcid_dimensions_publications_dois.shape[0]} publications were harvested from ORCID. Combining all data sources and removing duplicates results in {combined_publications_count}")
 
     st.subheader("Data flow diagram")
-    st.image("input/rialto-data-flow.png")
+    st.image(str(root / "input/rialto-data-flow.png"))
     st.subheader("Impact of each data source")
     st.pyplot(plot_venn3(openalex_dimensions_publications_dois, orcid_dimensions_publications_dois, sul_pub_dimensions_publications_dois, "Openalex", "Orcid", "SUL-Pub"))
 
