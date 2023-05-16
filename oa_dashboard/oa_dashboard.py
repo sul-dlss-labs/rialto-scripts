@@ -1,3 +1,5 @@
+import pathlib
+
 import pickle
 import pandas as pd
 import seaborn as sns
@@ -11,8 +13,10 @@ sns.set(style="darkgrid")
 font = {'family' : 'sans'}
 plt.rc('font', **font)
 
+root = pathlib.Path(__file__).parent
+
 # Getting back the objects:
-with open('input/objs_one.pkl', 'rb') as f:
+with open(root / 'input/objs_one.pkl', 'rb') as f:
     publication_count_sul_pub,\
     publications_with_doi_count,\
     openalex_dimensions_publications_dois,\
@@ -20,7 +24,7 @@ with open('input/objs_one.pkl', 'rb') as f:
     sul_pub_dimensions_publications_dois,\
     combined_publications_count = pickle.load(f)
 
-with open('input/objs_two.pkl', 'rb') as f:
+with open(root / 'input/objs_two.pkl', 'rb') as f:
     publications_type,\
     publications_pmcid_count,\
     publications_arxiv_id_count,\
@@ -28,7 +32,7 @@ with open('input/objs_two.pkl', 'rb') as f:
     plot_two_labels,\
     publications_oa_pre_print_count = pickle.load(f)
 
-with open('input/objs_three.pkl', 'rb') as f:
+with open(root / 'input/objs_three.pkl', 'rb') as f:
     plot_three_data,\
     oa_cost,\
     stanford_cost_gold,\
