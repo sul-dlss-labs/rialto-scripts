@@ -19,6 +19,12 @@ def get_federally_funded(funders):
         else:
             return 'no'
 
+def get_federal_agencies(funders):
+    if type(funders) == str:
+        funders = eval(funders)
+        for funder in funders:
+            return f"{funder.get('name')}: {funder.get('linkout')[0]}"
+
 # Read in csv data
 openalex_dimensions_contributions = pd.read_csv('input/dimensions/final/openalex_pubs_from_dois_final.csv')
 openalex_dimensions_publications = openalex_dimensions_contributions.drop_duplicates(subset='doi')
@@ -99,6 +105,8 @@ publications_supporting_grants_dois = combined_publications[combined_publication
 
 publications_grant_and_federally_funded_2019 = combined_publications[combined_publications.federally_funded == 'yes'][combined_publications.supporting_grant_ids.notnull()][combined_publications.pub_year > 2019]
 
+federal_agencies = publications_grant_and_federally_funded_2019.apply(lambda row : get_federal_agencies(row['funders']), axis = 1).value_counts(normalize = True).mul(100).round(1).astype(str)
+
 combined_publications.to_csv('input/dimensions/final/combined_publications.csv')
 
 # Saving the objects:
@@ -128,4 +136,5 @@ with open('input/objs_three.pkl', 'wb') as f:
                  publications_grant_and_federally_funded_count,
                  publications_federally_funded_dois,
                  publications_supporting_grants_dois,
-                 publications_grant_and_federally_funded_2019], f)
+                 publications_grant_and_federally_funded_2019,
+                 federal_agencies], f)

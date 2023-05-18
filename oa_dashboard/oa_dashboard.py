@@ -1,5 +1,3 @@
-import pathlib
-
 import pickle
 import pandas as pd
 import seaborn as sns
@@ -13,22 +11,22 @@ sns.set(style="darkgrid")
 font = {'family' : 'sans'}
 plt.rc('font', **font)
 
-root = pathlib.Path(__file__).parent
-
 # Getting back the objects:
-publication_count_sul_pub,\
-publications_with_doi_count,\
-openalex_dimensions_publications_dois,\
-orcid_dimensions_publications_dois,\
-sul_pub_dimensions_publications_dois,\
-combined_publications_count = pd.read_pickle(root / 'input/objs_one.pkl')
+with open('input/objs_one.pkl', 'rb') as f:
+    publication_count_sul_pub,\
+    publications_with_doi_count,\
+    openalex_dimensions_publications_dois,\
+    orcid_dimensions_publications_dois,\
+    sul_pub_dimensions_publications_dois,\
+    combined_publications_count = pickle.load(f)
 
-publications_type,\
-publications_pmcid_count,\
-publications_arxiv_id_count,\
-plot_two_data,\
-plot_two_labels,\
-publications_oa_pre_print_count = pd.read_pickle(root /  'input/objs_two.pkl')
+with open('input/objs_two.pkl', 'rb') as f:
+    publications_type,\
+    publications_pmcid_count,\
+    publications_arxiv_id_count,\
+    plot_two_data,\
+    plot_two_labels,\
+    publications_oa_pre_print_count = pickle.load(f)
 
 plot_three_data,\
 oa_cost,\
@@ -39,7 +37,8 @@ publications_federally_funded_count,\
 publications_grant_and_federally_funded_count,\
 publications_federally_funded_dois,\
 publications_supporting_grants_dois,\
-publications_grant_and_federally_funded_2019 = pd.read_pickle(root / 'input/objs_three.pkl')
+publications_grant_and_federally_funded_2019,\
+federal_agencies = pd.read_pickle(root / 'input/objs_three.pkl')
 
 # Open access colors
 blue = '#01a7ee'
@@ -108,11 +107,12 @@ def plot_venn3(array_one, array_two, array_three, label_one, label_two, label_th
 def plot_one():
     st.title("Publications by Stanford Researchers")
     st.subheader("Publications data context")
+    st.markdown("[Publications data context](#q-1a)")
     st.write("The publications presented in this report are from Openalex, ORCID, and SUL-Pub; SUL-Pub publications are harvested from Web of Science and Pubmed. The ORCID and Openalex publicatins were harvested based on the ORCID id of each researcher. The SUL-Pub publications were harvested from Web of Science and Pubmed initially using a name and institution query, then they were reviewed by each researcher for accuracy. All publications containing a doi were then re-harvested from Dimensions in order to enrich the data available for each publication.")
     st.write(f"There were {publication_count_sul_pub} publications exported from SUL-Pub. {publications_with_doi_count} of them had a doi. We were able to find {sul_pub_dimensions_publications_dois.shape[0]} of them in Dimensions ({round(100*(sul_pub_dimensions_publications_dois.shape[0]/publications_with_doi_count))}%) by queying their doi. An additional {openalex_dimensions_publications_dois.shape[0]} publications were harvested from Openalex and {orcid_dimensions_publications_dois.shape[0]} publications were harvested from ORCID. Combining all data sources and removing duplicates results in {combined_publications_count}")
 
     st.subheader("Data flow diagram")
-    st.image(str(root / "input/rialto-data-flow.png"))
+    st.image("input/rialto-data-flow.png")
     st.subheader("Impact of each data source")
     st.pyplot(plot_venn3(openalex_dimensions_publications_dois, orcid_dimensions_publications_dois, sul_pub_dimensions_publications_dois, "Openalex", "Orcid", "SUL-Pub"))
 
@@ -162,9 +162,14 @@ def plot_five():
     st.write(f"There is no field in the Dimensions organization entity that identifies it as a U.S. federal funding agency. We can identify federal funding agencies by combining the country and organization type–if the country equals 'United States' and the organization type equals 'government', we assume it to be a federal funding agency. {publications_federally_funded_count} ({round((publications_federally_funded_count/sul_pub_dimensions_publications_dois.shape[0])*100)}%) publications were federally funded. {publications_grant_and_federally_funded_count} publications were both federally funded and have values in the supporting_grant_ids column.")
     st.pyplot(plot_venn2(publications_supporting_grants_dois, publications_federally_funded_dois, 'Has Associated Grant', 'Federally Funded'))
 
+    st.subheader("Federal funding agencies")
+    st.write("Dimensions does not have direct data indicating which funders are federal government organizations. To get this information, we need to query for organizations with type: 'Government' and country: 'United State'. The table below can give us some idea of how well this approach works.")
+    st.write(federal_agencies + '%')
+
     # clears cache
     plt.figure()
     st.subheader("Open Access Status of Federally Funded Publications")
+    st.write("In order to estimate the percentage of Stanford publication that will have open access mandates, we can filter the publications for those containing a grant_id that are from a U.S. Government organizations and then group them by open access status.")
     df = publications_grant_and_federally_funded_2019
     data = df['open_access_cleaned'].value_counts().sort_values()
     labels = df['open_access_cleaned'].value_counts().sort_values().index
