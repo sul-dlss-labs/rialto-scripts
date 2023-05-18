@@ -28,19 +28,6 @@ with open('input/objs_two.pkl', 'rb') as f:
     plot_two_labels,\
     publications_oa_pre_print_count = pickle.load(f)
 
-<<<<<<< Updated upstream
-with open('input/objs_three.pkl', 'rb') as f:
-    plot_three_data,\
-    oa_cost,\
-    stanford_cost_gold,\
-    stanford_cost_hybrid,\
-    publications_supporting_grants_count,\
-    publications_federally_funded_count,\
-    publications_grant_and_federally_funded_count,\
-    publications_federally_funded_dois,\
-    publications_supporting_grants_dois,\
-    publications_grant_and_federally_funded_2019 = pickle.load(f)
-=======
 plot_three_data,\
 oa_cost,\
 stanford_cost_gold,\
@@ -52,7 +39,6 @@ publications_federally_funded_dois,\
 publications_supporting_grants_dois,\
 publications_grant_and_federally_funded_2019,\
 federal_agencies = pd.read_pickle(root / 'input/objs_three.pkl')
->>>>>>> Stashed changes
 
 # Open access colors
 blue = '#01a7ee'
