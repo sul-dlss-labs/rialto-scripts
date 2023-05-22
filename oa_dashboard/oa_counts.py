@@ -25,6 +25,12 @@ def get_federal_agencies(funders):
         for funder in funders:
             return f"{funder.get('name')}: {funder.get('linkout')[0]}"
 
+def get_academic_council(s, ac_sunets):
+    if s in ac_sunets:
+        return 'yes'
+    else:
+        return 'no'
+
 # Read in csv data
 openalex_dimensions_contributions = pd.read_csv('input/dimensions/final/openalex_pubs_from_dois_final.csv')
 openalex_dimensions_publications = openalex_dimensions_contributions.drop_duplicates(subset='doi')
@@ -36,22 +42,41 @@ orcid_dimensions_publications = orcid_dimensions_contributions.drop_duplicates(s
 sul_pub_dimensions_contributions = pd.read_csv('input/dimensions/final/sul_pub_pubs_from_dois_final.csv')
 sul_pub_dimensions_publications = sul_pub_dimensions_contributions.drop_duplicates(subset='doi')
 
+# Get academic council sunets
+academic_council_sunets = list(set(pd.read_csv('input/academic_council/academic_council_11-15-2022.csv').SUNETID.to_list()))
+
 openalex_dimensions_publications_dois = openalex_dimensions_publications.doi
 orcid_dimensions_publications_dois = orcid_dimensions_publications.doi
 sul_pub_dimensions_publications_dois = sul_pub_dimensions_publications.doi
 
-combined_publications = sul_pub_dimensions_contributions.drop_duplicates(subset='doi')
 sul_pub_raw_publications = pd.read_csv('input/sul_pub/pubs_all_authors_03212023.csv').drop_duplicates(subset='doi')
 
-combined_contributions = pd.concat([openalex_dimensions_publications, orcid_dimensions_publications, combined_publications], axis=0, ignore_index=True)
+combined_contributions = pd.concat([openalex_dimensions_contributions, orcid_dimensions_contributions, sul_pub_dimensions_contributions], axis=0, ignore_index=True).drop_duplicates(subset=['doi', 'sunet'])
 
 combined_contributions['federally_funded'] = combined_contributions.apply(lambda row : get_federally_funded(row['funders']), axis = 1)
 
 # Clean open access data
 combined_contributions['open_access_cleaned'] = combined_contributions['open_access'].str.replace("'oa_all', ", '').str.replace("[", "").str.replace("]", "").str.replace("'", "")
 
+combined_contributions['academic_council'] = combined_contributions.apply(lambda row : get_academic_council(row['sunet'], academic_council_sunets), axis = 1)
+
+combined_contributions = combined_contributions.sort_values('academic_council')
+
+combined_publications = combined_contributions.drop_duplicates(subset='doi')
+
+oa_policy_publications = combined_contributions[combined_contributions.academic_council == 'yes']
+oa_policy_publications = oa_policy_publications[oa_policy_publications.type == 'article']
+oa_policy_publications = oa_policy_publications[oa_policy_publications.pub_year > 2020].drop_duplicates(subset='doi').open_access_cleaned
+
+oa_policy_publications_count = len(oa_policy_publications)
+oa_policy_publications_value_counts = oa_policy_publications.value_counts().sort_values()
+oa_policy_publications_labels = oa_policy_publications.value_counts().sort_values().index
+
+non_academic_council_publications_count = len(combined_contributions[combined_contributions.academic_council == 'no'].drop_duplicates(subset='doi'))
+
 combined_publications = combined_contributions.drop_duplicates(subset='doi')
 combined_publications_count = combined_publications.shape[0]
+combined_publications_2021_count = len(combined_publications[combined_publications.pub_year > 2020])
 
 sul_pub_raw_publications_count = sul_pub_raw_publications.shape[0]
 
@@ -128,7 +153,14 @@ with open('input/objs_two.pkl', 'wb') as f:
 
 with open('input/objs_three.pkl', 'wb') as f:
     pickle.dump([plot_three_data,
-                 oa_cost,
+                 oa_policy_publications_count,
+                 oa_policy_publications_value_counts,
+                 oa_policy_publications_labels,
+                 non_academic_council_publications_count,
+                 combined_publications_2021_count], f)
+
+with open('input/objs_four.pkl', 'wb') as f:
+    pickle.dump([oa_cost,
                  stanford_cost_gold,
                  stanford_cost_hybrid,
                  publications_supporting_grants_count,
