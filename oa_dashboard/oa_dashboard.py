@@ -1,3 +1,5 @@
+import pathlib
+
 import pickle
 import pandas as pd
 import seaborn as sns
@@ -11,22 +13,22 @@ sns.set(style="darkgrid")
 font = {'family' : 'sans'}
 plt.rc('font', **font)
 
-# Getting back the objects:
-with open('input/objs_one.pkl', 'rb') as f:
-    publication_count_sul_pub,\
-    publications_with_doi_count,\
-    openalex_dimensions_publications_dois,\
-    orcid_dimensions_publications_dois,\
-    sul_pub_dimensions_publications_dois,\
-    combined_publications_count = pickle.load(f)
+root = pathlib.Path(__file__).parent
 
-with open('input/objs_two.pkl', 'rb') as f:
-    publications_type,\
-    publications_pmcid_count,\
-    publications_arxiv_id_count,\
-    plot_two_data,\
-    plot_two_labels,\
-    publications_oa_pre_print_count = pickle.load(f)
+# Getting back the objects:
+publication_count_sul_pub,\
+publications_with_doi_count,\
+openalex_dimensions_publications_dois,\
+orcid_dimensions_publications_dois,\
+sul_pub_dimensions_publications_dois,\
+combined_publications_count = pd.read_pickle(root / 'input/objs_one.pkl')
+
+publications_type,\
+publications_pmcid_count,\
+publications_arxiv_id_count,\
+plot_two_data,\
+plot_two_labels,\
+publications_oa_pre_print_count = pd.read_pickle(root /  'input/objs_two.pkl')
 
 plot_three_data,\
 oa_cost,\
@@ -112,7 +114,7 @@ def plot_one():
     st.write(f"There were {publication_count_sul_pub} publications exported from SUL-Pub. {publications_with_doi_count} of them had a doi. We were able to find {sul_pub_dimensions_publications_dois.shape[0]} of them in Dimensions ({round(100*(sul_pub_dimensions_publications_dois.shape[0]/publications_with_doi_count))}%) by queying their doi. An additional {openalex_dimensions_publications_dois.shape[0]} publications were harvested from Openalex and {orcid_dimensions_publications_dois.shape[0]} publications were harvested from ORCID. Combining all data sources and removing duplicates results in {combined_publications_count}")
 
     st.subheader("Data flow diagram")
-    st.image("input/rialto-data-flow.png")
+    st.image(str(root / "input/rialto-data-flow.png"))
     st.subheader("Impact of each data source")
     st.pyplot(plot_venn3(openalex_dimensions_publications_dois, orcid_dimensions_publications_dois, sul_pub_dimensions_publications_dois, "Openalex", "Orcid", "SUL-Pub"))
 
