@@ -31,6 +31,12 @@ plot_two_labels,\
 publications_oa_pre_print_count = pd.read_pickle(root /  'input/objs_two.pkl')
 
 plot_three_data,\
+oa_policy_publications_count,\
+oa_policy_publications_value_counts,\
+oa_policy_publications_labels,\
+non_academic_council_publications_count,\
+combined_publications_2021_count = pd.read_pickle(root / 'input/objs_three.pkl')
+
 oa_cost,\
 stanford_cost_gold,\
 stanford_cost_hybrid,\
@@ -40,7 +46,7 @@ publications_grant_and_federally_funded_count,\
 publications_federally_funded_dois,\
 publications_supporting_grants_dois,\
 publications_grant_and_federally_funded_2019,\
-federal_agencies = pd.read_pickle(root / 'input/objs_three.pkl')
+federal_agencies = pd.read_pickle(root / 'input/objs_four.pkl')
 
 # Open access colors
 blue = '#01a7ee'
@@ -145,6 +151,15 @@ def plot_three():
     plot = plot_three_data.plot(kind='bar', stacked=True, color=[bronze, red, gold, green, gray])
     plot.set(xlabel='School', ylabel='Publications')
 
+    st.pyplot(plt)
+
+    # clears cache
+    plt.figure()
+    st.subheader("Publications covered by Open Access Policy")
+    st.write("The Stanford open access policy covers articles written by members of the academic council since December 2020. Dimensions does not provide publication months, so the data below includes all publications with type 'article' written by a member of the academic council since January 1, 2021.")
+    st.write(f"There were {oa_policy_publications_count:,} ({round((oa_policy_publications_count/combined_publications_2021_count)*100):,}%) publications covered by the Stanford academic policy.")
+    st.write(f"{non_academic_council_publications_count:,} ({round((non_academic_council_publications_count/combined_publications_count)*100):,}%) of all publications since 2018 do not include an author on the academic council.")
+    plt.pie(oa_policy_publications_value_counts, labels = oa_policy_publications_labels, colors=[colours[key] for key in oa_policy_publications_labels], autopct='%.0f%%')
     st.pyplot(plt)
 
 def plot_four():
