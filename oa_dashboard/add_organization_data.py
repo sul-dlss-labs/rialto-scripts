@@ -4,7 +4,7 @@ import pandas as pd
 
 
 school_files = glob.glob('input/profiles/*')
-publication_df = pd.read_csv('input/dimensions/intermediate/orcid_pubs_from_dois.csv')
+publication_df = pd.read_csv('input/dimensions/intermediate/openalex_pubs_from_dois.csv')
 
 # Delete accidentaly harvested duplicates
 publication_df = publication_df.drop_duplicates(subset=['sunet', 'doi'])
@@ -18,6 +18,7 @@ for file in school_files:
 
 publication_df['schools'] = ''
 publication_df['departments'] = ''
+publication_df['role'] = ''
 for sunet in set(publication_df.sunet):
     schools = school_df['schools'][school_df['sunetid'] == sunet].tolist()
     if len(schools) == 0:
@@ -35,4 +36,12 @@ for sunet in set(publication_df.sunet):
 
     publication_df['departments'] = np.where(publication_df['sunet'] == sunet, departments_string, publication_df['departments'])
 
-publication_df.to_csv('input/dimensions/final/orcid_pubs_from_dois_final.csv')
+    roles = school_df['role'][school_df['sunetid'] == sunet].tolist()
+    if len(roles) == 0:
+        role_string = None
+    else:
+        role_string = roles[0]
+
+    publication_df['role'] = np.where(publication_df['sunet'] == sunet, role_string, publication_df['role'])
+
+publication_df.to_csv('input/dimensions/final/openalex_pubs_from_dois_final.csv')

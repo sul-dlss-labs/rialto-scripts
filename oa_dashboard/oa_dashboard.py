@@ -34,10 +34,15 @@ plot_three_data,\
 oa_policy_publications_count,\
 oa_policy_publications_value_counts,\
 oa_policy_publications_labels,\
+oa_percent_school,\
 non_academic_council_publications_count,\
+non_academic_council_publishers,\
+non_academic_council_publishers_labels,\
 combined_publications_2021_count = pd.read_pickle(root / 'input/objs_three.pkl')
 
-oa_cost,\
+oa_hybrid_cost,\
+oa_gold_cost,\
+oa_combined_cost,\
 stanford_cost_gold,\
 stanford_cost_hybrid,\
 publications_supporting_grants_count,\
@@ -57,11 +62,19 @@ green = '#31caa8'
 purple = '#9f29ff'
 red = '#ff412c'
 
+
 colours = {'bronze': bronze,
-        'gold': gold,
-       'closed': red,
-       'green': green,
-       'hybrid': gray}
+           'gold': gold,
+           'closed': red,
+           'green': green,
+           'hybrid': gray}
+
+role_colours = {'students, fellows, and residents': red,
+                'registry': blue,
+                'staff': bronze,
+                'phdstudent': gray,
+                'postdoc': green,
+                'faculty': gold}
 
 
 # Helper functions
@@ -114,78 +127,81 @@ def plot_venn3(array_one, array_two, array_three, label_one, label_two, label_th
 # Plotting functions
 def plot_one():
     st.title("Publications by Stanford Researchers")
-    st.subheader("Publications data context")
-    st.markdown("[Publications data context](#q-1a)")
+    st.header("Publications data context")
     st.write("The publications presented in this report are from Openalex, ORCID, and SUL-Pub; SUL-Pub publications are harvested from Web of Science and Pubmed. The ORCID and Openalex publicatins were harvested based on the ORCID id of each researcher. The SUL-Pub publications were harvested from Web of Science and Pubmed initially using a name and institution query, then they were reviewed by each researcher for accuracy. All publications containing a doi were then re-harvested from Dimensions in order to enrich the data available for each publication.")
-    st.write(f"There were {publication_count_sul_pub} publications exported from SUL-Pub. {publications_with_doi_count} of them had a doi. We were able to find {sul_pub_dimensions_publications_dois.shape[0]} of them in Dimensions ({round(100*(sul_pub_dimensions_publications_dois.shape[0]/publications_with_doi_count))}%) by queying their doi. An additional {openalex_dimensions_publications_dois.shape[0]} publications were harvested from Openalex and {orcid_dimensions_publications_dois.shape[0]} publications were harvested from ORCID. Combining all data sources and removing duplicates results in {combined_publications_count}")
+    st.write(f"There were {publication_count_sul_pub:,} publications exported from SUL-Pub. {publications_with_doi_count:,} of them had a doi. We were able to find {sul_pub_dimensions_publications_dois.shape[0]:,} of them in Dimensions ({round(100*(sul_pub_dimensions_publications_dois.shape[0]/publications_with_doi_count))}%) by queying their doi. An additional {openalex_dimensions_publications_dois.shape[0]:,} publications were harvested from Openalex and {orcid_dimensions_publications_dois.shape[0]:,} publications were harvested from ORCID. Combining all data sources and removing duplicates results in {combined_publications_count:,}")
 
-    st.subheader("Data flow diagram")
+    st.header("Compilation of 2018-2023 Stanford Publications")
     st.image(str(root / "input/rialto-data-flow.png"))
-    st.subheader("Impact of each data source")
-    st.pyplot(plot_venn3(openalex_dimensions_publications_dois, orcid_dimensions_publications_dois, sul_pub_dimensions_publications_dois, "Openalex", "Orcid", "SUL-Pub"))
+    st.header("2018-2023 Stanford Publications by Data Source")
+    st.caption("Number of unique and duplicate Stanford publications by data source.")
+    st.pyplot(plot_venn3(openalex_dimensions_publications_dois, orcid_dimensions_publications_dois, sul_pub_dimensions_publications_dois, "OpenAlex", "ORCID iD", "Stanford Profiles (Web of Science & PubMed)"))
 
-    st.subheader("Publications by type")
-    st.write(publications_type + '%')
+    st.header("2018-2023 Stanford Publications by Type")
+    st.write(publications_type)
 
 def plot_two():
     st.title("Open Access Publication Trends")
-    st.subheader("Publications data context")
-    st.write("The publications presented in this report were harvested from Web of Science and Pubmed initially and reviewed by each researcher for accuracy. All approved publications containing a doi were then re-harvested from Dimensions in order to enrich the data available for each publication.")
+    st.header("Available Identifiers")
+    st.write(f"{publications_pmcid_count:,} ({round(publications_pmcid_count/combined_publications_count*100)}%) publications had pmcid values. {publications_arxiv_id_count:,} ({round(publications_arxiv_id_count/combined_publications_count*100)}%) publications had arxiv_id values.")
 
-    st.subheader("Available Identifiers")
-    st.write(f"{publications_pmcid_count} ({round((publications_pmcid_count/len(sul_pub_dimensions_publications_dois))*100)}%) publications had pmcid values. {publications_arxiv_id_count} ({round((publications_arxiv_id_count/len(sul_pub_dimensions_publications_dois))*100)}%) publications had arxiv_id values.")
-
-    st.subheader("Publications by Open Access Category")
-    plt.pie(plot_two_data, labels = plot_two_labels, colors=[colours[key] for key in plot_two_labels], autopct='%.0f%%')
+    st.header("Open Access Status of 2018-2023 Stanford Publications")
+    st.caption("Distribution of 2018-2023 Stanford Publications by open access status based on [Dimensions/Unpaywall access categories](https://www.dimensions.ai/wp-content/uploads/2021/02/Dimensions_New-OA-status-definition.pdf)")
+    plt.pie(plot_two_data, labels = [s.capitalize() for s in plot_two_labels], colors=[colours[key] for key in plot_two_labels], autopct='%.2f')
     st.pyplot(plt)
 
-    st.subheader("Open Access Preprints")
+    st.header("Open Access Preprints")
     st.write(f"There are {publications_oa_pre_print_count} open access preprints.")
 
 def plot_three():
     st.title("Opportunities for Increasning Open Access Publications")
-    st.subheader("Publications data context")
-    st.write("The publications presented in this report were harvested from Web of Science and Pubmed initially and reviewed by each researcher for accuracy. All approved publications containing a doi were then re-harvested from Dimensions in order to enrich the data available for each publication. This data set was then merged with an academic council data set containing school and department information. Stanford researchers that are not members of the academic council have been filtered of this set.")
 
-    st.subheader("Open Access Status by School")
+    st.header("Open Access Status of 2018-2023 Publications by Stanford School")
+    st.caption("Distribution of 2018-2023 Publications by open access status for each Stanford school. Based on [Dimensions/Unpaywall access categories](https://www.dimensions.ai/wp-content/uploads/2021/02/Dimensions_New-OA-status-definition.pdf)")
     plot = plot_three_data.plot(kind='bar', stacked=True, color=[bronze, red, gold, green, gray])
     plot.set(xlabel='School', ylabel='Publications')
 
     st.pyplot(plt)
 
+    st.header("Open Access Publications by School")
+    st.write(oa_percent_school + '%')
+
     # clears cache
     plt.figure()
-    st.subheader("Publications covered by Open Access Policy")
-    st.write("The Stanford open access policy covers articles written by members of the academic council since December 2020. Dimensions does not provide publication months, so the data below includes all publications with type 'article' written by a member of the academic council since January 1, 2021.")
+    st.header("Publications covered by Open Access Policy")
+    st.write("The Stanford open access policy covers articles written by members of the academic council since December 2020. Dimensions does not provide publication months, and we also don't have historical lists of academic council members, so the data below includes all publications with type 'article' written by a member of the academic council since January 1, 2023.")
     st.write(f"There were {oa_policy_publications_count:,} ({round((oa_policy_publications_count/combined_publications_2021_count)*100):,}%) publications covered by the Stanford academic policy.")
     st.write(f"{non_academic_council_publications_count:,} ({round((non_academic_council_publications_count/combined_publications_count)*100):,}%) of all publications since 2018 do not include an author on the academic council.")
     plt.pie(oa_policy_publications_value_counts, labels = oa_policy_publications_labels, colors=[colours[key] for key in oa_policy_publications_labels], autopct='%.0f%%')
     st.pyplot(plt)
 
+    # clears cache
+    plt.figure()
+    st.header("Role of Non Academic Council Publishers")
+    st.write("The pie chart below shows the distrubition of roles among Stanford publishers that are not members of the academic council.")
+    plt.pie(non_academic_council_publishers, labels = non_academic_council_publishers_labels, colors=[role_colours[key] for key in non_academic_council_publishers_labels], autopct='%.0f%%')
+    st.pyplot(plt)
+
 def plot_four():
     st.title("Decreasing the Cost of Open Access Publishing")
-    st.subheader("Open access publication cost")
-    st.write(f"Open access publishing by Stanford authors has cost an estimated ${oa_cost:,} since 2018.")
-    st.write(f"It would have cost Stanford an estimated ${stanford_cost_gold:,} to publish all articles at the gold level.")
-    st.write(f"It would have cost Stanford an estimated ${stanford_cost_hybrid:,} to publish all articles at the hybrid level.")
+    st.header("Open access publication cost")
+    st.write(f"Based on conservative estimates of average article processing charges-\$1,000 for gold open access articles and \$3,000 for hybrid open access articles-Stanford authors likely paid upwards of: \${oa_gold_cost:,} for gold open access and, \${oa_hybrid_cost:,} for hybrid open access during 2018-2023, resulting in an estimated \${oa_combined_cost:,} spent on article processing charges.")
+    st.write(f"Paying to publish all 2018-2023 Stanford publications in gold open access journals would have likely cost upwards of \${stanford_cost_gold:,} while paying to publish all publications in hybrid open access journals would have likely cost upwards of \${stanford_cost_hybrid:,}.")
 
 def plot_five():
     st.title("Funding Trends")
-    st.subheader("Publications data context")
-    st.write("The publications presented in this report were harvested from Web of Science and Pubmed initially and reviewed by each researcher for accuracy. All approved publications containing a doi were then re-harvested from Dimensions in order to enrich the data available for each publication.")
-
-    st.subheader("Grant Data in Dimensions")
+    st.header("Grant Data in Dimensions")
     st.write(f"{publications_supporting_grants_count} ({round((publications_supporting_grants_count/sul_pub_dimensions_publications_dois.shape[0])*100)}%) publications had supporting_grant_ids values.")
     st.write(f"There is no field in the Dimensions organization entity that identifies it as a U.S. federal funding agency. We can identify federal funding agencies by combining the country and organization type–if the country equals 'United States' and the organization type equals 'government', we assume it to be a federal funding agency. {publications_federally_funded_count} ({round((publications_federally_funded_count/sul_pub_dimensions_publications_dois.shape[0])*100)}%) publications were federally funded. {publications_grant_and_federally_funded_count} publications were both federally funded and have values in the supporting_grant_ids column.")
     st.pyplot(plot_venn2(publications_supporting_grants_dois, publications_federally_funded_dois, 'Has Associated Grant', 'Federally Funded'))
 
-    st.subheader("Federal funding agencies")
+    st.header("Federal funding agencies")
     st.write("Dimensions does not have direct data indicating which funders are federal government organizations. To get this information, we need to query for organizations with type: 'Government' and country: 'United State'. The table below can give us some idea of how well this approach works.")
     st.write(federal_agencies + '%')
 
     # clears cache
     plt.figure()
-    st.subheader("Open Access Status of Federally Funded Publications")
+    st.header("Open Access Status of Federally Funded Publications")
     st.write("In order to estimate the percentage of Stanford publication that will have open access mandates, we can filter the publications for those containing a grant_id that are from a U.S. Government organizations and then group them by open access status.")
     df = publications_grant_and_federally_funded_2019
     data = df['open_access_cleaned'].value_counts().sort_values()

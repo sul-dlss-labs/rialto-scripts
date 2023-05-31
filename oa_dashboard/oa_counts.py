@@ -66,15 +66,25 @@ combined_publications = combined_contributions.drop_duplicates(subset='doi')
 
 oa_policy_publications = combined_contributions[combined_contributions.academic_council == 'yes']
 oa_policy_publications = oa_policy_publications[oa_policy_publications.type == 'article']
-oa_policy_publications = oa_policy_publications[oa_policy_publications.pub_year > 2020].drop_duplicates(subset='doi').open_access_cleaned
+oa_policy_publications = oa_policy_publications[oa_policy_publications.pub_year > 2022].drop_duplicates(subset='doi').open_access_cleaned
 
 oa_policy_publications_count = len(oa_policy_publications)
 oa_policy_publications_value_counts = oa_policy_publications.value_counts().sort_values()
 oa_policy_publications_labels = oa_policy_publications.value_counts().sort_values().index
 
 non_academic_council_publications_count = len(combined_contributions[combined_contributions.academic_council == 'no'].drop_duplicates(subset='doi'))
+combined_contributions.role = combined_contributions.role.map({'resident': 'students, fellows, and residents',
+                                                               'msstudent': 'students, fellows, and residents',
+                                                               'mdsstudent': 'students, fellows, and residents',
+                                                               'fellow': 'students, fellows, and residents',
+                                                               'phdstudent': 'phdstudent',
+                                                               'faculty': 'faculty',
+                                                               'registry': 'registry',
+                                                               'staff': 'staff',
+                                                               'postdoc': 'postdoc'})
+non_academic_council_publishers = combined_contributions.drop_duplicates(subset='doi').role.dropna().value_counts().sort_values()
+non_academic_council_publishers_labels = non_academic_council_publishers.index
 
-combined_publications = combined_contributions.drop_duplicates(subset='doi')
 combined_publications_count = combined_publications.shape[0]
 combined_publications_2021_count = len(combined_publications[combined_publications.pub_year > 2020])
 
@@ -87,6 +97,11 @@ openalex_dimensions_publications = openalex_dimensions_publications[openalex_dim
 orcid_dimensions_publications = orcid_dimensions_publications[orcid_dimensions_publications.pub_year > 2017]
 
 publications_type = combined_publications.type.value_counts(normalize = True).mul(100).round(1).astype(str)
+
+publications_type = publications_type.to_frame()
+publications_type.reset_index(inplace=True)
+publications_type = publications_type.rename(columns={'index': 'Publication Type', 'type': 'Percentage'})
+publications_type['Percentage'] = publications_type['Percentage'].astype(str) + '%'
 
 publications_pmcid_count = combined_publications[combined_publications.pmcid.notnull()].shape[0]
 
@@ -110,11 +125,25 @@ for index, row in schools_required.iterrows():
             print(f"Finished row {index+1} of {101210}")
 
 org_df = org_df.astype({'schools':'string', 'open_access_cleaned': 'string'})
-org_df.to_csv('org_df.csv')
 
-plot_three_data = org_df.groupby(["schools", "open_access_cleaned"]).size().unstack()
+org_df = org_df.rename(columns={"open_access_cleaned": "Open Access Status"})
+plot_three_data = org_df.groupby(["schools", "Open Access Status"]).size().unstack()
+oa_percent_school = org_df.groupby(["schools", "Open Access Status"]).size().unstack()
+oa_percent_school['oa_all'] = oa_percent_school['bronze'] + oa_percent_school['gold'] + oa_percent_school['green'] + oa_percent_school['hybrid']
+oa_percent_school['Total Publications'] = oa_percent_school['oa_all'] + oa_percent_school['closed']
+oa_percent_school['OA Bronze'] = ((oa_percent_school['bronze']/oa_percent_school['Total Publications']).multiply(100).round(decimals=2)).astype(str)
+oa_percent_school['OA Gold'] = ((oa_percent_school['gold']/oa_percent_school['Total Publications']).multiply(100).round(decimals=2)).astype(str)
+oa_percent_school['OA Green'] = ((oa_percent_school['green']/oa_percent_school['Total Publications']).multiply(100).round(decimals=2)).astype(str)
+oa_percent_school['OA Hybrid'] = ((oa_percent_school['hybrid']/oa_percent_school['Total Publications']).multiply(100).round(decimals=2)).astype(str)
+oa_percent_school['Closed'] = ((oa_percent_school['closed']/oa_percent_school['Total Publications']).multiply(100).round(decimals=2)).astype(str)
+oa_percent_school['OA Combined'] = ((oa_percent_school['oa_all']/oa_percent_school['Total Publications']).multiply(100).round(decimals=2)).astype(str)
 
-oa_cost = (combined_publications[combined_publications.open_access_cleaned == 'hybrid'].shape[0] * 3000) + combined_publications[combined_publications.open_access_cleaned == 'gold'].shape[0] * 1000
+oa_percent_school = oa_percent_school.drop(columns=['oa_all', 'bronze', 'closed', 'gold', 'hybrid', 'green', 'Total Publications'])
+
+oa_hybrid_cost = (combined_publications[combined_publications.open_access_cleaned == 'hybrid'].shape[0] * 3000)
+oa_gold_cost = (combined_publications[combined_publications.open_access_cleaned == 'gold'].shape[0] * 1000)
+oa_combined_cost = oa_hybrid_cost + oa_gold_cost
+
 stanford_cost_gold = combined_publications.shape[0] * 1000
 stanford_cost_hybrid = combined_publications.shape[0] * 3000
 
@@ -156,11 +185,16 @@ with open('input/objs_three.pkl', 'wb') as f:
                  oa_policy_publications_count,
                  oa_policy_publications_value_counts,
                  oa_policy_publications_labels,
+                 oa_percent_school,
                  non_academic_council_publications_count,
+                 non_academic_council_publishers,
+                 non_academic_council_publishers_labels,
                  combined_publications_2021_count], f)
 
 with open('input/objs_four.pkl', 'wb') as f:
-    pickle.dump([oa_cost,
+    pickle.dump([oa_hybrid_cost,
+                 oa_gold_cost,
+                 oa_combined_cost,
                  stanford_cost_gold,
                  stanford_cost_hybrid,
                  publications_supporting_grants_count,
