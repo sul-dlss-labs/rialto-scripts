@@ -50,8 +50,7 @@ publications_federally_funded_count,\
 publications_grant_and_federally_funded_count,\
 publications_federally_funded_dois,\
 publications_supporting_grants_dois,\
-publications_grant_and_federally_funded_2019,\
-federal_agencies = pd.read_pickle(root / 'input/objs_four.pkl')
+publications_grant_and_federally_funded_2019 = pd.read_pickle(root / 'input/objs_four.pkl')
 
 # Open access colors
 blue = '#01a7ee'
@@ -191,24 +190,23 @@ def plot_four():
 def plot_five():
     st.title("Funding Trends")
     st.header("Grant Data in Dimensions")
-    st.write(f"{publications_supporting_grants_count} ({round((publications_supporting_grants_count/sul_pub_dimensions_publications_dois.shape[0])*100)}%) publications had supporting_grant_ids values.")
-    st.write(f"There is no field in the Dimensions organization entity that identifies it as a U.S. federal funding agency. We can identify federal funding agencies by combining the country and organization type–if the country equals 'United States' and the organization type equals 'government', we assume it to be a federal funding agency. {publications_federally_funded_count} ({round((publications_federally_funded_count/sul_pub_dimensions_publications_dois.shape[0])*100)}%) publications were federally funded. {publications_grant_and_federally_funded_count} publications were both federally funded and have values in the supporting_grant_ids column.")
+    st.write(f"{publications_supporting_grants_count:,} ({round((publications_supporting_grants_count/sul_pub_dimensions_publications_dois.shape[0])*100)}%) publications had associated grant data.")
+    st.write(f"There is no field in the Dimensions organization entity that identifies it as a U.S. federal funding agency. To determine federal funding agencies we used a list from a recent OSTP impact study (Schares, 2022). {publications_federally_funded_count:,} ({round((publications_federally_funded_count/sul_pub_dimensions_publications_dois.shape[0])*100)}%) publications were federally funded. {publications_grant_and_federally_funded_count:,} publications were both federally funded and have values in the supporting_grant_ids column.")
     st.pyplot(plot_venn2(publications_supporting_grants_dois, publications_federally_funded_dois, 'Has Associated Grant', 'Federally Funded'))
-
-    st.header("Federal funding agencies")
-    st.write("Dimensions does not have direct data indicating which funders are federal government organizations. To get this information, we need to query for organizations with type: 'Government' and country: 'United State'. The table below can give us some idea of how well this approach works.")
-    st.write(federal_agencies + '%')
 
     # clears cache
     plt.figure()
     st.header("Open Access Status of Federally Funded Publications")
-    st.write("In order to estimate the percentage of Stanford publication that will have open access mandates, we can filter the publications for those containing a grant_id that are from a U.S. Government organizations and then group them by open access status.")
+    st.write("In order to estimate the percentage of Stanford publication that will have open access mandates, we can filter the publications for those containing a grant_id that are from a U.S. Government organization and then group them by open access status.")
     df = publications_grant_and_federally_funded_2019
     data = df['open_access_cleaned'].value_counts().sort_values()
     labels = df['open_access_cleaned'].value_counts().sort_values().index
-    plt.pie(data, labels = labels, colors=[colours[key] for key in labels], autopct='%.0f%%')
+    plt.pie(data, labels = [s.capitalize() for s in labels], colors=[colours[key] for key in labels], autopct='%.0f%%')
 
     st.pyplot(plt)
+
+    st.header("References")
+    st.write("Schares, E. (2022). OSTP impact. https://doi.org/10.5281/zenodo.7254815. Accessed May 31, 2023.")
 
 def main():
 
