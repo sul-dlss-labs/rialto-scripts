@@ -15,6 +15,8 @@ plt.rc('font', **font)
 
 root = pathlib.Path(__file__).parent
 
+ALPHA = 0.82
+
 # Getting back the objects:
 publication_count_sul_pub,\
 publications_with_doi_count,\
@@ -89,17 +91,17 @@ def plot_venn2(array_one, array_two, label_one, label_two):
     v = venn2(subsets = (len(set1.difference(set2)),
                          len(set2.difference(set1)),
                          len(set1.intersection(set2))), set_labels = (label_one, label_two),
-                         alpha=1)
+                         alpha=ALPHA)
 
     c = venn2_circles(subsets = (len(set1.difference(set2)),
                                  len(set2.difference(set1)),
-                                 len(set1.intersection(set2))), linestyle='solid', alpha=1)
+                                 len(set1.intersection(set2))), linestyle='solid', alpha=ALPHA)
 
     v.get_patch_by_id('10').set_color(blue)
     v.get_patch_by_id('11').set_color(green)
     v.get_patch_by_id('01').set_color(gold)
 
-    v.get_label_by_id("10").set_x(-0.66)
+    v.get_label_by_id("10").set_x(-0.68)
     v.get_label_by_id("01").set_x(0.69)
 
 
@@ -112,7 +114,7 @@ def plot_venn3(array_one, array_two, array_three, label_one, label_two, label_th
 
     fig, ax = plt.subplots()
 
-    ax = venn3(subsets = (set1, set2, set3), set_labels = (label_one, label_two, label_three), alpha=1)
+    ax = venn3(subsets = (set1, set2, set3), set_labels = (label_one, label_two, label_three), alpha=ALPHA)
 
     ax.get_patch_by_id('001').set_color(blue)
     ax.get_patch_by_id('010').set_color(red)
@@ -120,6 +122,10 @@ def plot_venn3(array_one, array_two, array_three, label_one, label_two, label_th
     ax.get_patch_by_id('100').set_color(gold)
     ax.get_patch_by_id('101').set_color(green)
     ax.get_patch_by_id('110').set_color(bronze)
+    ax.get_patch_by_id('111').set_color(gray)
+
+    ax.get_label_by_id("111").set_x(-0.26)
+    ax.get_label_by_id("100").set_x(-0.55)
 
     return fig
 
