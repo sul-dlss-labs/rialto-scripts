@@ -2,28 +2,16 @@ import pickle
 import pandas as pd
 import json
 
-def get_federally_funded(funders):
-    if type(funders) == str:
-        funders = eval(funders)
-        combo = []
-        for funder in funders:
-            country = False
-            government = False
-            if funder.get('country_name') == 'United States':
-                country = True
-            if 'Government' in funder.get('types'):
-                government = True
-            combo.append([country, government])
-        if [True, True] in combo:
+def get_federally_funded(publication_funders):
+    if type(publication_funders) == str:
+        publication_funders = eval(publication_funders)
+        publication_funders_ids = []
+        for funder in publication_funders:
+            publication_funders_ids.append(funder.get('id'))
+        if len(set(publication_funders_ids).intersection(federal_funders)) > 0:
             return 'yes'
         else:
             return 'no'
-
-def get_federal_agencies(funders):
-    if type(funders) == str:
-        funders = eval(funders)
-        for funder in funders:
-            return f"{funder.get('name')}: {funder.get('linkout')[0]}"
 
 def get_academic_council(s, ac_sunets):
     if s in ac_sunets:
@@ -44,6 +32,10 @@ sul_pub_dimensions_publications = sul_pub_dimensions_contributions.drop_duplicat
 
 # Get academic council sunets
 academic_council_sunets = list(set(pd.read_csv('input/academic_council/academic_council_11-15-2022.csv').SUNETID.to_list()))
+
+# Get funders
+funders_df = pd.read_csv('input/shares_ostp/Funders.csv', skiprows=1)
+federal_funders = list(set(funders_df.ID))
 
 openalex_dimensions_publications_dois = openalex_dimensions_publications.doi
 orcid_dimensions_publications_dois = orcid_dimensions_publications.doi
@@ -159,8 +151,6 @@ publications_supporting_grants_dois = combined_publications[combined_publication
 
 publications_grant_and_federally_funded_2019 = combined_publications[combined_publications.federally_funded == 'yes'][combined_publications.supporting_grant_ids.notnull()][combined_publications.pub_year > 2019]
 
-federal_agencies = publications_grant_and_federally_funded_2019.apply(lambda row : get_federal_agencies(row['funders']), axis = 1).value_counts(normalize = True).mul(100).round(1).astype(str)
-
 combined_publications.to_csv('input/dimensions/final/combined_publications.csv')
 
 # Saving the objects:
@@ -202,5 +192,4 @@ with open('input/objs_four.pkl', 'wb') as f:
                  publications_grant_and_federally_funded_count,
                  publications_federally_funded_dois,
                  publications_supporting_grants_dois,
-                 publications_grant_and_federally_funded_2019,
-                 federal_agencies], f)
+                 publications_grant_and_federally_funded_2019], f)
