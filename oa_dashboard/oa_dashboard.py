@@ -11,6 +11,8 @@ from matplotlib_venn import venn3, venn3_circles
 
 sns.set(style="darkgrid")
 
+root = pathlib.Path(__file__).parent
+
 # Getting back the objects:
 sul_pub_raw_publications_count,\
 sul_pub_raw_publications_doi_count,\
@@ -49,7 +51,7 @@ publications_grant_and_federally_funded_count,\
 publications_federally_funded_dois,\
 publications_supporting_grants_dois,\
 publications_grant_and_federally_funded_2019_data,\
-publications_grant_and_federally_funded_2019_labels = pd.read_pickle('input/dashboard_objs.pkl')
+publications_grant_and_federally_funded_2019_labels = pd.read_pickle(root / 'input/dashboard_objs.pkl')
 
 # Color scheme
 celadon = '#9CDE9F'
@@ -92,7 +94,7 @@ def plot_one():
     st.write(f"There were {sul_pub_raw_publications_count:,} publications exported from SUL-Pub. {sul_pub_raw_publications_doi_count:,} of them had a DOI. We were able to find {sul_pub_dimensions_publications_dois.shape[0]:,} of them in Dimensions ({round(100*(sul_pub_dimensions_publications_dois.shape[0]/sul_pub_raw_publications_doi_count))}%) by queying their DOI. An additional {dimensions_publications_dois.shape[0]:,} publications were harvested from Dimensions, {openalex_dimensions_publications_dois.shape[0]:,} from Openalex, and {orcid_dimensions_publications_dois.shape[0]:,} from ORCID. Combining all data sources and removing duplicates results in {combined_publications_count:,} total unique publications.")
 
     st.header("Compilation of 2018-2023 Stanford publications")
-    st.image(str("input/rialto-data-flow.png"))
+    st.image(str(root / "input/rialto-data-flow.png"))
     st.header("2018-2023 Stanford Publications by Data Source")
     st.caption("Number of unique and duplicate Stanford publications by data source.")
     labels = venn.get_labels([set(openalex_dimensions_publications_dois), set(orcid_dimensions_publications_dois), set(sul_pub_dimensions_publications_dois), set(dimensions_publications_dois)], fill=['number']) # add 'logic' to 'fill' to get region numbers
