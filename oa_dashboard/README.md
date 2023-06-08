@@ -1,0 +1,23 @@
+# Introduction
+The open access dashboard is an attempt to shed insight into the current status of Stanford open access publications and to track compliance with [Stanford's open access policy](https://laneguides.stanford.edu/openaccess/policies) and the [OSTP public access memo](https://www.whitehouse.gov/wp-content/uploads/2022/08/08-2022-OSTP-Public-Access-Memo.pdf). It is not intended to be treated as a full production application; the strategies used to gain insight into Stanford's open access publishing will need to be flexible since the questions and data sources change regularly. However, it is critical that the data presented in the report has sufficient context and is accurate. The application is deployed [here](https://sul-dlss-labs-rialto-scripts-oa-dashboardoa-dashboard-yiuiox.streamlit.app/).
+# Data Flow
+![rialto-data-flow](https://github.com/sul-dlss-labs/rialto-scripts/assets/37662787/b8d57666-b0aa-4251-93f7-a7f9e6209197)
+## Data Inputs
+- A) Publications harvested from Web of Science using the SUL-Pub application. Publications are queried using a list of variant names stored for each researcher AND institutions, including Stanford and and known past institutions.
+- B) Publications harvested from PubMed using the SUL-Pub application. Publications are queried using a list of variant names stored for each researcher AND institutions, including Stanford and and known past institutions.
+- C) Publications exported from SUL-Pub (only approved publications; see process step 1).
+- D) Publications harvested from ORCID API (using known research ORCID IDs).
+- E) Publications harvested from OpenAlex API (using known research ORCID IDs using [this script](https://github.com/sul-dlss-labs/rialto-scripts/blob/master/oa_dashboard/harvest_scripts/get_openalex_pubs_from_orcid.py)).
+- F) Publications harvested from Dimensions API (using known research ORCID IDs using [this scrpit](https://github.com/sul-dlss-labs/rialto-scripts/blob/master/oa_dashboard/harvest_scripts/get_dimesnsions_pubs_from_orcids.py)).
+- G) Data linking SUNETs with affiliated Departments and Schools (harvested from the Profiles API)
+- H) Data associating SUNETs with academic council status (Manually retrieved through Tom Kramer).
+- I) Federal funders data published [here](https://zenodo.org/record/7438427) (data was harvested from Dimensions and manually reviewed).
+## Data Processes
+- 1\) Stanford researchers receive all publications harvested with SUL-Pub in their inbox and have the opportunity to review them for relevance. Some researchers do not review their publications, or do so irregularly. Since we only include approved publications, the number of publications from SUL-Pub will go up as researchers have more time to review them.
+- 2\) All publications from SUL-Pub, OpenAlex, and the ORCID API are re-harvested from Dimensions using [this script](https://github.com/sul-dlss-labs/rialto-scripts/blob/master/oa_dashboard/harvest_scripts/get__dimensions_pubs_from_dois.py) which takes the doi of the publication and query's the Dimenisons API for that doi. This step ensures that all publication data is normalized and allows us to take advantage of Dimensions' richer data model, which includes funder and field category data.
+- 3\) Publications from SUL-Pub, OpenAlex, ORCID, and Dimensions are merged into a single pandas Dataframe and enriched with data from inputs G, H, and I using [this script](https://github.com/sul-dlss-labs/rialto-scripts/blob/master/oa_dashboard/enrich_publication_data.py).
+- 4\) Deduplication of publications happens in several stages: the initial harvests from SUL-Pub, OpenAlex, ORCID, and Dimensions are deduplicated by DOI and SUNET prior to merging in step 3 (this gives us all contributions–one row for every Stanford author that contributed to each publication–that are unique within each of the four sets of publications and makes the data enrichment more efficient). Then the same process is repeated after merging the four sets of publications (this gives us all contributions that are unique within the combined set). Finally, some questions require us to look at contributions and others require us to look at publications. For questions examining publications, rows are deduplicated based on DOI alone.
+- 5\) Data is pre-computed using [this script](https://github.com/sul-dlss-labs/rialto-scripts/blob/master/oa_dashboard/pickle_dashboard_data.py) to reduce the file size and avoid live processing in the application.
+- ## Relevant Data and Notes
+- Large data files, Colab notebooks, etc. are stored in [this drive](https://drive.google.com/drive/u/0/folders/1Zp87F27PselSSZGT4xv0inGuwC1GXEop).
+
