@@ -4,9 +4,8 @@ import pandas as pd
 
 OUTPUT_CSV = f"output/openalex_publications_from_orcid.csv"
 
-INPUT = pd.read_csv('../stanford_researcher_ids.csv').tail(450)
+INPUT = pd.read_csv('../input/stanford_researcher_ids.csv')
 sunet_orcid_dict = pd.Series(INPUT.orcid.values,index=INPUT.sunet).to_dict()
-# sunet_orcid_dict = INPUT.set_index(INPUT.sunet).to_dict()[INPUT.orcid]
 
 os.makedirs(os.path.dirname(OUTPUT_CSV), exist_ok=True)
 with open(OUTPUT_CSV, 'a') as OUTPUT_CSV:
