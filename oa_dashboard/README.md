@@ -9,7 +9,7 @@ The open access dashboard is an attempt to shed insight into the current status 
 - D) Publications exported from SUL-Pub (only approved publications; see process step 1).
 - E) Publications harvested from ORCID API (using known research ORCID IDs).
 - F) Publications harvested from OpenAlex API (using known research ORCID IDs using [this script](https://github.com/sul-dlss-labs/rialto-scripts/blob/master/oa_dashboard/harvest_scripts/get_openalex_pubs_from_orcid.py)).
-- G) Publications harvested from Dimensions API (using known research ORCID IDs using [this scrpit](https://github.com/sul-dlss-labs/rialto-scripts/blob/master/oa_dashboard/harvest_scripts/get_dimesnsions_pubs_from_orcids.py)).
+- G) Publications harvested from Dimensions API (using known research ORCID IDs using [this scrpit](https://github.com/sul-dlss-labs/rialto-scripts/blob/master/oa_dashboard/harvest_scripts/get_dimensions_pubs_from_orcids.py)).
 - H) Data linking SUNETs with affiliated Departments and Schools (harvested from the Profiles API)
 - I) Data associating SUNETs with academic council status (Manually retrieved through Tom Kramer).
 - J) Federal funders data published [here](https://zenodo.org/record/7438427) (data was harvested from Dimensions and manually reviewed).
