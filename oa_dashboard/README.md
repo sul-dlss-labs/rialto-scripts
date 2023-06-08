@@ -1,17 +1,18 @@
 # Introduction
 The open access dashboard is an attempt to shed insight into the current status of Stanford open access publications and to track compliance with [Stanford's open access policy](https://laneguides.stanford.edu/openaccess/policies) and the [OSTP public access memo](https://www.whitehouse.gov/wp-content/uploads/2022/08/08-2022-OSTP-Public-Access-Memo.pdf). It is not intended to be treated as a full production application; the strategies used to gain insight into Stanford's open access publishing will need to be flexible since the questions and data sources change regularly. However, it is critical that the data presented in the report has sufficient context and is accurate. The application is deployed [here](https://sul-dlss-labs-rialto-scripts-oa-dashboardoa-dashboard-yiuiox.streamlit.app/).
 # Data Flow
-![rialto-data-flow](https://github.com/sul-dlss-labs/rialto-scripts/assets/37662787/b8d57666-b0aa-4251-93f7-a7f9e6209197)
+![rialto-data-flow](https://github.com/sul-dlss-labs/rialto-scripts/assets/37662787/efc97170-161a-4094-8938-2c79e8a3b9c9)
 ## Data Inputs
 - A) Publications harvested from Web of Science using the SUL-Pub application. Publications are queried using a list of variant names stored for each researcher AND institutions, including Stanford and and known past institutions.
 - B) Publications harvested from PubMed using the SUL-Pub application. Publications are queried using a list of variant names stored for each researcher AND institutions, including Stanford and and known past institutions.
-- C) Publications exported from SUL-Pub (only approved publications; see process step 1).
-- D) Publications harvested from ORCID API (using known research ORCID IDs).
-- E) Publications harvested from OpenAlex API (using known research ORCID IDs using [this script](https://github.com/sul-dlss-labs/rialto-scripts/blob/master/oa_dashboard/harvest_scripts/get_openalex_pubs_from_orcid.py)).
-- F) Publications harvested from Dimensions API (using known research ORCID IDs using [this scrpit](https://github.com/sul-dlss-labs/rialto-scripts/blob/master/oa_dashboard/harvest_scripts/get_dimesnsions_pubs_from_orcids.py)).
-- G) Data linking SUNETs with affiliated Departments and Schools (harvested from the Profiles API)
-- H) Data associating SUNETs with academic council status (Manually retrieved through Tom Kramer).
-- I) Federal funders data published [here](https://zenodo.org/record/7438427) (data was harvested from Dimensions and manually reviewed).
+- C) A csv file with Stanford researcher identifiers.
+- D) Publications exported from SUL-Pub (only approved publications; see process step 1).
+- E) Publications harvested from ORCID API (using known research ORCID IDs).
+- F) Publications harvested from OpenAlex API (using known research ORCID IDs using [this script](https://github.com/sul-dlss-labs/rialto-scripts/blob/master/oa_dashboard/harvest_scripts/get_openalex_pubs_from_orcid.py)).
+- G) Publications harvested from Dimensions API (using known research ORCID IDs using [this scrpit](https://github.com/sul-dlss-labs/rialto-scripts/blob/master/oa_dashboard/harvest_scripts/get_dimesnsions_pubs_from_orcids.py)).
+- H) Data linking SUNETs with affiliated Departments and Schools (harvested from the Profiles API)
+- I) Data associating SUNETs with academic council status (Manually retrieved through Tom Kramer).
+- J) Federal funders data published [here](https://zenodo.org/record/7438427) (data was harvested from Dimensions and manually reviewed).
 ## Data Processes
 - 1\) Stanford researchers receive all publications harvested with SUL-Pub in their inbox and have the opportunity to review them for relevance. Some researchers do not review their publications, or do so irregularly. Since we only include approved publications, the number of publications from SUL-Pub will go up as researchers have more time to review them.
 - 2\) All publications from SUL-Pub, OpenAlex, and the ORCID API are re-harvested from Dimensions using [this script](https://github.com/sul-dlss-labs/rialto-scripts/blob/master/oa_dashboard/harvest_scripts/get__dimensions_pubs_from_dois.py) which takes the doi of the publication and query's the Dimenisons API for that doi. This step ensures that all publication data is normalized and allows us to take advantage of Dimensions' richer data model, which includes funder and field category data.
