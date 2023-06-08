@@ -6,7 +6,7 @@ The open access dashboard is an attempt to shed insight into the current status 
 - A) Publications harvested from Web of Science using the SUL-Pub application. Publications are queried using a list of variant names stored for each researcher AND institutions, including Stanford and and known past institutions.
 - B) Publications harvested from PubMed using the SUL-Pub application. Publications are queried using a list of variant names stored for each researcher AND institutions, including Stanford and and known past institutions.
 - C) A csv file with Stanford researcher identifiers.
-- D) Publications exported from SUL-Pub (only approved publications; see process step 1).
+- D) Publications exported from SUL-Pub (only approved publications; see process step 1). This is done via the `sul:export_pubs_for_authors_csv` rake task in the sul_pub codebase: https://github.com/sul-dlss/sul_pub/blob/main/lib/tasks/sul.rake#L164  It is run something like this: `RAILS_ENV=production bundle exec rake sul:export_pubs_for_authors_csv['tmp/input_authors.csv','tmp/exported_pubs.csv','01/01/2022','12/31/2022']`
 - E) Publications harvested from ORCID API (using known research ORCID IDs).
 - F) Publications harvested from OpenAlex API (using known research ORCID IDs using [this script](https://github.com/sul-dlss-labs/rialto-scripts/blob/master/oa_dashboard/harvest_scripts/get_openalex_pubs_from_orcid.py)).
 - G) Publications harvested from Dimensions API (using known research ORCID IDs using [this scrpit](https://github.com/sul-dlss-labs/rialto-scripts/blob/master/oa_dashboard/harvest_scripts/get_dimensions_pubs_from_orcids.py)).
@@ -21,4 +21,3 @@ The open access dashboard is an attempt to shed insight into the current status 
 - 5\) Data is pre-computed using [this script](https://github.com/sul-dlss-labs/rialto-scripts/blob/master/oa_dashboard/pickle_dashboard_data.py) to reduce the file size and avoid live processing in the application.
 ## Relevant Data and Notes
 - Large data files, Colab notebooks, etc. are stored in [this drive](https://drive.google.com/drive/u/0/folders/1Zp87F27PselSSZGT4xv0inGuwC1GXEop).
-
