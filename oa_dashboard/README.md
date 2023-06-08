@@ -18,6 +18,6 @@ The open access dashboard is an attempt to shed insight into the current status 
 - 3\) Publications from SUL-Pub, OpenAlex, ORCID, and Dimensions are merged into a single pandas Dataframe and enriched with data from inputs G, H, and I using [this script](https://github.com/sul-dlss-labs/rialto-scripts/blob/master/oa_dashboard/enrich_publication_data.py).
 - 4\) Deduplication of publications happens in several stages: the initial harvests from SUL-Pub, OpenAlex, ORCID, and Dimensions are deduplicated by DOI and SUNET prior to merging in step 3 (this gives us all contributions–one row for every Stanford author that contributed to each publication–that are unique within each of the four sets of publications and makes the data enrichment more efficient). Then the same process is repeated after merging the four sets of publications (this gives us all contributions that are unique within the combined set). Finally, some questions require us to look at contributions and others require us to look at publications. For questions examining publications, rows are deduplicated based on DOI alone.
 - 5\) Data is pre-computed using [this script](https://github.com/sul-dlss-labs/rialto-scripts/blob/master/oa_dashboard/pickle_dashboard_data.py) to reduce the file size and avoid live processing in the application.
-- ## Relevant Data and Notes
+## Relevant Data and Notes
 - Large data files, Colab notebooks, etc. are stored in [this drive](https://drive.google.com/drive/u/0/folders/1Zp87F27PselSSZGT4xv0inGuwC1GXEop).
 
