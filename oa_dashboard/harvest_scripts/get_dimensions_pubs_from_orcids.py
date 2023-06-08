@@ -2,7 +2,7 @@ import csv, dimcli, json, math, sys
 import pandas as pd
 from datetime import datetime
 # Need to add to the path to import config
-sys.path.insert(1, '../../')
+sys.path.insert(1, '../../../')
 import config
 
 # Helper functions
@@ -46,22 +46,12 @@ def construct_query(orcid):
                     return publications [title + authors + id + doi + pmid + pmcid + arxiv_id + type + date + concepts + publisher + journal + volume + issue + year + funder_countries + funders + funding_section + open_access + research_orgs + supporting_grant_ids + category_for + category_bra]
                     limit 1000""".format(orcid))
 
-# def construct_query(orcid):
-#     print(orcid)
-#     return dsl.query("""search publications where researchers.orcid_id = "\\"{}\\""
-#                     return publications [title + authors + id + doi + pmid + pmcid + arxiv_id + type + date + concepts + publisher + journal + volume + issue + year + funder_countries + funders + funding_section + open_access + research_orgs + supporting_grant_ids + category_for + category_bra]
-#                     limit 1000""".format(orcid))
-
-# def construct_query(orcid):
-#     return dsl.query("""search publications where researchers.orcid_id = "0000-0002-1838-9363" return publications [title + authors + id + doi + pmid + pmcid + arxiv_id + type + date + concepts + publisher + journal + volume + issue + year + funder_countries + funders + funding_section + open_access + research_orgs + supporting_grant_ids + category_for + category_bra]
-#                         limit 1000""")
-
 # connect to the database
 dimcli.login(config.username, config.password, config.endpoint)
 dsl = dimcli.Dsl()
 
-CHUNK_SIZE = 400
-INPUT = pd.read_csv('/Users/jtim/Dropbox/DLSS/rialto/research-intelligence/stanford_researcher_ids.csv', header=0)
+INPUT = pd.read_csv('../input/stanford_researcher_ids.csv')
+SUNET_ORCID_DICT = pd.Series(INPUT.orcid.values,index=INPUT.sunet).to_dict()
 OUTPUT_CSV = 'output/dimensions_pubs_from_orcids.csv'
 OUTPUT_JSONL = 'output/dimensions_pubs_from_orcids.jsonl'
 CSV_FIELDS = ["sunet", "title", "authors", "dimensions_id", "doi", "doi_url", "pmid", "pmcid", "arxiv_id", "type", "date", "concepts", "publisher", "journal", "volume", "issue", "pub_year", "funder_countries", "funders", "funding_section", "open_access", "research_orgs", "supporting_grant_ids", "category_for", "category_bra"]
@@ -70,11 +60,8 @@ with open(OUTPUT_CSV, 'a') as f:
     writer = csv.writer(f)
     writer.writerow(CSV_FIELDS)
 
-    sunets = list(set(INPUT.sunet.to_list()))[4385:]
-    for count, sunet in enumerate(sunets, start=4385):
-        print(f'Harvesting {count} of {len(sunets)+4385}.')
-
-        orcid = INPUT.loc[INPUT['sunet'] == sunet, 'orcid'].iloc[0].replace('https://orcid.org/', '')
+    for count, (sunet, orcid) in enumerate(SUNET_ORCID_DICT.items(), start=1):
+        print(f'Harvesting {count} of {len(SUNET_ORCID_DICT)}.')
 
         query = construct_query(orcid)
 

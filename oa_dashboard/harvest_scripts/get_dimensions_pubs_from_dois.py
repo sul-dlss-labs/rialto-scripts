@@ -2,7 +2,7 @@ import csv, dimcli, json, math, sys
 import pandas as pd
 from datetime import datetime
 # Need to add to the path to import config
-sys.path.insert(1, '../../')
+sys.path.insert(1, '../../../')
 import config
 
 # Helper functions
@@ -59,7 +59,6 @@ def construct_query(chunk_of_dois):
 dimcli.login(config.username, config.password, config.endpoint)
 dsl = dimcli.Dsl()
 
-CHUNK_SIZE = 400
 INPUT = pd.read_csv('/Users/jtim/Dropbox/DLSS/rialto/research-intelligence/reports/oa_2023/input/orcid/orcid_sul_pub_publication_report_sulpub_dois.csv', header=0)
 OUTPUT_CSV = 'output/orcid_pubs_from_dois.csv'
 OUTPUT_JSONL = 'output/orcid_pubs_from_dois.jsonl'
@@ -69,17 +68,9 @@ with open(OUTPUT_CSV, 'a') as f:
     writer = csv.writer(f)
     writer.writerow(CSV_FIELDS)
 
-# chunks = int(math.floor(len(INPUT)/CHUNK_SIZE))
-# remainder = len(INPUT) % CHUNK_SIZE
-
-# Harvest chunks
-# for i in range(chunks-1):
-    # end_index = CHUNK_SIZE + (i*CHUNK_SIZE)
-    # start_index = i*CHUNK_SIZE
-    # print(f'Harvesting chunk {i+1} of {chunks+1} range [{start_index}:{end_index}]')
-sunets = list(set(INPUT.sunetid.to_list()))[4518:]
-for count, sunet in enumerate(sunets, start=4518):
-    print(f'Harvesting {count} of {len(sunets)+4518}.')
+sunets = list(set(INPUT.sunetid.to_list()))
+for count, sunet in enumerate(sunets, start=1):
+    print(f'Harvesting {count} of {len(sunets)}.')
 
     chunk_of_dois = stringify_list(INPUT[INPUT.sunetid == sunet].doi)
 
@@ -92,16 +83,3 @@ for count, sunet in enumerate(sunets, start=4518):
         with open(OUTPUT_CSV, 'a') as f:
             writer = csv.writer(f)
             writer.writerow(new_row)
-
-
-# Harvest remainder
-# end_index = remainder + ((chunks-1)*CHUNK_SIZE)
-# start_index = (chunks-1)*CHUNK_SIZE
-# print(f'Harvesting chunk {chunks} of {chunks+1} range [{start_index}:{end_index}]')
-# query = construct_query(chunk_of_dois)
-#
-# for pub in query['publications']:
-#     new_row = [pub['title'], get_author_names(pub.get('authors')), pub['id'], pub.get('doi'), "https://doi.org/{}".format(pub.get('doi')), pub.get('pmid'), pub.get('pmcid'), pub.get('arxiv_id'), pub.get('type'), pub.get('date'), pub.get('concepts'), pub.get('publisher'), get_sub_field(pub.get('journal'), 'title'), pub.get('volume'), pub.get('issue'), pub.get('year'), get_sub_fields_from_list(pub.get('funder_countries'), 'name'), get_sub_fields_from_list(pub.get('funders'), 'name'), pub.get('funding_section'), pub.get('open_access'), get_sub_fields_from_list(pub.get('research_orgs'), 'name'), pub.get('supporting_grant_ids'), get_sub_fields_from_list(pub.get('category_for'), 'name'), get_sub_fields_from_list(pub.get('category_bra'), 'name')]
-#     with open(OUTPUT_CSV, 'a') as f:
-#         writer = csv.writer(f)
-#         writer.writerow(new_row)
