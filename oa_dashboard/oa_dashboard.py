@@ -45,13 +45,9 @@ oa_gold_cost,\
 oa_combined_cost,\
 stanford_cost_gold,\
 stanford_cost_hybrid,\
-publications_supporting_grants_count,\
 publications_federally_funded_count,\
-publications_grant_and_federally_funded_count,\
-publications_federally_funded_dois,\
-publications_supporting_grants_dois,\
-publications_grant_and_federally_funded_2019_data,\
-publications_grant_and_federally_funded_2019_labels = pd.read_pickle(root / 'input/dashboard_objs.pkl')
+publications_federally_funded_2019_data,\
+publications_federally_funded_2019_labels = pd.read_pickle(root / 'input/dashboard_objs.pkl')
 
 # Color scheme
 celadon = '#9CDE9F'
@@ -61,23 +57,32 @@ lemon_chiffon = '#FFFACD'
 light_salmon = '#FFA07A'
 pale_turquoise = '#AFEEEE'
 
+# grey scale
+# venn_4_colors = [
+#     # r, g, b, a
+#     [160, 160, 160, 0.9],
+#     [192, 192, 192, 0.8],
+#     [224, 224, 224, 0.6],
+#     [240, 240, 240, 0.4],
+# ]
 venn_4_colors = [
     # r, g, b, a
-    [160, 158, 187, 0.9],
-    [156, 222, 159, 0.8],
-    [255, 147, 79, 0.6],
-    [255, 250, 205, 0.4],
+    [209, 194, 209, 0.9],
+    [197, 255, 240, 0.8],
+    [255, 211, 211, 0.6],
+    [255, 239, 159, 0.4],
 ]
+
 venn_4_colors = [
     [i[0] / 255.0, i[1] / 255.0, i[2] / 255.0, i[3]]
     for i in venn_4_colors
 ]
 
-oa_colours = {'bronze': '#CF853A',
-           'gold': '#FFCA2A',
-           'closed': '#2E4052',
-           'green': '#35AB68',
-           'hybrid': '#3772FF'}
+oa_colours = {'bronze': '#BE7A42',
+           'gold': '#FEC51D',
+           'closed': '#DAD7CB',
+           'green': '#00B289',
+           'hybrid': '#6FC3FF'}
 
 role_colours = {'students, fellows, and residents': celadon,
                 'registry': lemon_chiffon,
@@ -94,7 +99,7 @@ def plot_one():
     st.write(f"There were {sul_pub_raw_publications_count:,} publications exported from SUL-Pub. {sul_pub_raw_publications_doi_count:,} of them had a DOI. We were able to find {sul_pub_dimensions_publications_dois.shape[0]:,} of them in Dimensions ({round(100*(sul_pub_dimensions_publications_dois.shape[0]/sul_pub_raw_publications_doi_count))}%) by queying their DOI. An additional {dimensions_publications_dois.shape[0]:,} publications were harvested from Dimensions, {openalex_dimensions_publications_dois.shape[0]:,} from Openalex, and {orcid_dimensions_publications_dois.shape[0]:,} from ORCID. Combining all data sources and removing duplicates results in {combined_publications_count:,} total unique publications.")
 
     st.header("Compilation of 2018-2023 Stanford publications")
-    st.image(str(root / "input/rialto-data-flow.png"))
+    st.image(str(root / "input/rialto-data-flow.png"), caption="Data flow diagram")
     st.header("2018-2023 Stanford Publications by Data Source")
     st.caption("Number of unique and duplicate Stanford publications by data source.")
     labels = venn.get_labels([set(openalex_dimensions_publications_dois), set(orcid_dimensions_publications_dois), set(sul_pub_dimensions_publications_dois), set(dimensions_publications_dois)], fill=['number']) # add 'logic' to 'fill' to get region numbers
@@ -162,17 +167,10 @@ def plot_four():
 
 def plot_five():
     st.title("Funding trends")
-    st.header("Grant data in Dimensions")
-    st.write(f"{len(publications_supporting_grants_dois):,} ({round((len(publications_federally_funded_dois)/combined_publications_count)*100)}%) publications had associated grant data.")
-    st.write(f"There is no field in the Dimensions organization entity that identifies it as a U.S. federal funding agency. To determine federal funding agencies we used a list from a recent OSTP impact study (Schares, 2022). {publications_federally_funded_count:,} ({round((publications_federally_funded_count/combined_publications_count)*100)}%) publications were federally funded. {publications_grant_and_federally_funded_count:,} publications were both federally funded and have values in the supporting_grant_ids column.")
-    labels = venn.get_labels([set(publications_supporting_grants_dois), set(publications_federally_funded_dois)], fill=['number']) # add 'logic' to 'fill' to get region numbers
-    fig, ax = venn.venn4(labels, names=['Has Associated Grant', 'Federally Funded'], colors=venn_4_colors)
-    st.pyplot(fig)
-    # clears cache
-    plt.figure()
-    st.header("Open access status of federally funded publications")
-    st.write("In order to estimate the percentage of Stanford publication that will have open access mandates, we can filter the publications for those containing a grant_id that are from a U.S. Government organization and then group them by open access status.")
-    plt.pie(publications_grant_and_federally_funded_2019_data, labels = publications_grant_and_federally_funded_2019_labels, autopct='%.0f%%')
+
+    st.header("Open access status of federally funded publications (2020-2023)")
+    st.write(f"There is no field in the Dimensions organization entity that identifies it as a U.S. federal funding agency. To determine federal funding agencies we used a list from a recent OSTP impact study (Schares, 2022). {publications_federally_funded_count:,} ({round((publications_federally_funded_count/combined_publications_count)*100)}%) publications were federally funded.")
+    plt.pie(publications_federally_funded_2019_data, labels = publications_federally_funded_2019_labels, colors=[oa_colours[key] for key in faculty_publications_labels], autopct='%.0f%%')
 
     st.pyplot(plt)
 

@@ -101,14 +101,10 @@ stanford_cost_gold = combined_publications.shape[0] * 1000
 stanford_cost_hybrid = combined_publications.shape[0] * 3000
 
 # publication grant data
-publications_supporting_grants_count = combined_publications[combined_publications.supporting_grant_ids.notnull()].shape[0]
 publications_federally_funded_count = combined_publications[combined_publications.federally_funded == 'yes'].shape[0]
-publications_grant_and_federally_funded_count = combined_publications[combined_publications.federally_funded == 'yes'][combined_publications.supporting_grant_ids.notnull()].shape[0]
-publications_federally_funded_dois = combined_publications[combined_publications.federally_funded == 'yes']['doi']
-publications_supporting_grants_dois = combined_publications[combined_publications.supporting_grant_ids.notnull()]['doi']
-publications_grant_and_federally_funded_2019 = combined_publications[combined_publications.federally_funded == 'yes'][combined_publications.supporting_grant_ids.notnull()][combined_publications.pub_year > 2019]
-publications_grant_and_federally_funded_2019_data = publications_grant_and_federally_funded_2019['open_access_cleaned'].value_counts().sort_values()
-publications_grant_and_federally_funded_2019_labels = publications_grant_and_federally_funded_2019['open_access_cleaned'].value_counts().sort_values().index
+publications_federally_funded_2019 = combined_publications[combined_publications.federally_funded == 'yes'][combined_publications.pub_year > 2019]
+publications_federally_funded_2019_data = publications_federally_funded_2019['open_access_cleaned'].value_counts().sort_values()
+publications_federally_funded_2019_labels = publications_federally_funded_2019['open_access_cleaned'].value_counts().sort_values().index
 
 # Saving the objects:
 with open('input/dashboard_objs.pkl', 'wb') as f:
@@ -143,27 +139,6 @@ with open('input/dashboard_objs.pkl', 'wb') as f:
                  oa_combined_cost,
                  stanford_cost_gold,
                  stanford_cost_hybrid,
-                 publications_supporting_grants_count,
                  publications_federally_funded_count,
-                 publications_grant_and_federally_funded_count,
-                 publications_federally_funded_dois,
-                 publications_supporting_grants_dois,
-                 publications_grant_and_federally_funded_2019_data,
-                 publications_grant_and_federally_funded_2019_labels], f)
-
-# with open('input/objs_four.pkl', 'wb') as f:
-#     pickle.dump([oa_hybrid_cost,
-#                  oa_gold_cost,
-#                  oa_combined_cost,
-#                  stanford_cost_gold,
-#                  stanford_cost_hybrid], f)
-#
-# with open('input/objs_five.pkl', 'wb') as f:
-#     pickle.dump([publications_supporting_grants_count,
-#                  publications_federally_funded_count,
-#                  publications_grant_and_federally_funded_count,
-#                  publications_federally_funded_dois,
-#                  publications_supporting_grants_dois], f)
-#
-# with open('input/objs_six.pkl', 'wb') as f:
-#     pickle.dump([publications_grant_and_federally_funded_2019], f)
+                 publications_federally_funded_2019_data,
+                 publications_federally_funded_2019_labels], f)
