@@ -5,11 +5,8 @@ import pandas as pd
 # helper functions
 def filter_schools(schools, core_schools):
     """Filters out schools that are not core schools."""
-    if not schools:
-        return None
-    else:
-        schools = schools.split('|')
-        return next(school for school in schools if school in core_schools)
+    schools = schools.split('|')
+    return next((school for school in schools if school in core_schools), "No School")
 
 def get_academic_council(sunet, ac_sunets):
     """Returns the academic council membership status for
@@ -32,11 +29,11 @@ def get_federally_funded(publication_funders):
         else:
             return 'no'
 
-def get_first_value(cell_value):
+def get_first_value(cell_value, default):
     """Returns the first value of a list, or None. Used to simplfy
     the categorical data in some rows by reducing it to the first value."""
     if len(cell_value) == 0:
-        value = None
+        value = default
     else:
         value = cell_value[0]
     return value
@@ -52,7 +49,7 @@ for file in school_files:
 funders_df = pd.read_csv('input/shares_ostp/Funders.csv', skiprows=1) # read in funders data from OSTP report
 federal_funders = list(set(funders_df.ID))
 
-academic_council_sunets = list(set(pd.read_csv('input/academic_council/academic_council_11-15-2022.csv').SUNETID.to_list())) # read in academic council data
+academic_council_sunets = list(pd.read_csv('input/academic_council/academic_council_11-15-2022.csv').SUNETID.unique()) # read in academic council data
 
 # contributions are not the same as publications; 3 co-authors = 3 contributions, but only 1 publication
 contribution_files = glob.glob('input/dimensions/intermediate/*.csv')
@@ -61,6 +58,8 @@ contribution_count = 0
 combined_contributions = pd.DataFrame()
 for count, file in enumerate(contribution_files, start=1):
     contribution_df = pd.read_csv(file)
+    contribution_df = contribution_df.dropna(subset='doi') # remove publications without dois, they will get dropped when deleting dupes anyway
+    contribution_df['doi'] = contribution_df['doi'].str.lower().replace('https://doi.org/', '') # normailize DOIs
     contribution_df = contribution_df.drop_duplicates(subset=['sunet', 'doi']) # remove duplicate contributions
     contribution_df = contribution_df[contribution_df.iloc[:, 0] != contribution_df.columns[0]] # remove duplicate header rows
     contribution_df['pub_year'] = contribution_df['pub_year'].fillna(-1)
@@ -73,11 +72,15 @@ for count, file in enumerate(contribution_files, start=1):
 
 assert len(combined_contributions) == contribution_count # make sure dataframes were concatenated correctly
 
+combined_contributions = combined_contributions[combined_contributions.iloc[:, 0] != combined_contributions.columns[0]] # remove duplicate header rows
+
 combined_contributions = combined_contributions.drop_duplicates(subset=['sunet', 'doi']) # we need to remove duplicate contributions again
+
+assert list(combined_contributions['doi'].str.lower()) == list(combined_contributions['doi'])
 
 expected_publication_count = combined_contributions.shape[0] # grab pubplication count for late test
 
-expected_column_count = combined_contributions.shape[1] # grab pubplication count for late test
+expected_column_count = combined_contributions.shape[1] # grab pubplication count for later test
 
 # add organization fields
 combined_contributions['schools'] = ''
@@ -86,17 +89,17 @@ combined_contributions['role'] = ''
 
 for sunet in set(combined_contributions.sunet): # loop through sunets and add org data from schools_df
     schools = school_df['schools'][school_df['sunetid'] == sunet].tolist()
-    schools_string = get_first_value(schools)
+    schools_string = get_first_value(schools, 'No School')
 
     combined_contributions['schools'] = np.where(combined_contributions['sunet'] == sunet, schools_string, combined_contributions['schools'])
 
     departments = school_df['departments'][school_df['sunetid'] == sunet].tolist()
-    departments_string = get_first_value(departments)
+    departments_string = get_first_value(departments, 'No Department')
 
     combined_contributions['departments'] = np.where(combined_contributions['sunet'] == sunet, departments_string, combined_contributions['departments'])
 
     roles = school_df['role'][school_df['sunetid'] == sunet].tolist()
-    role_string = get_first_value(roles)
+    role_string = get_first_value(roles, 'No Role')
 
     combined_contributions['role'] = np.where(combined_contributions['sunet'] == sunet, role_string, combined_contributions['role'])
 
@@ -104,11 +107,14 @@ assert combined_contributions.shape[1] == expected_column_count +3 # make sure w
 
 # reformat open_access data in a new column for pie charts, removes the oa_all aggregate category
 combined_contributions['open_access_cleaned'] = combined_contributions['open_access'].str.replace("'oa_all', ", '').str.replace("[", "").str.replace("]", "").str.replace("'", "")
+combined_contributions['open_access_cleaned'] = combined_contributions['open_access_cleaned'].str.capitalize() # upper case for presentation
 
 # define the seven Stanford core schools so we can ignore the rest
 core_schools = ["Graduate School of Business", "Graduate School of Education", "School of Engineering", "School of Humanities and Sciences", "School of Medicine", "Stanford Doerr School of Sustainability", "Stanford Law School"]
 
 combined_contributions['core_schools'] = combined_contributions.apply(lambda row : filter_schools(row['schools'], core_schools), axis = 1)
+
+# assert len(combined_contributions.core_schools.unique()) == 8 # Make sure all the core schools plus "No School" are present
 
 combined_contributions['federally_funded'] = combined_contributions.apply(lambda row : get_federally_funded(row['funders']), axis = 1)
 
