@@ -47,3 +47,7 @@ def enumerate_results(result_xml_doc,countries_count,author_countries_count,orga
   end
 
 end
+
+def quote_wrap(terms)
+  terms.compact_blank.uniq.map { |x| "\"#{x.delete('"')}\"" }
+end
